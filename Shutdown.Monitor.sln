@@ -10,6 +10,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shutdown.Monitor.Sync", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shutdown.Monitor.Schedule.Tests", "tests\Shutdown.Monitor.Schedule.Tests\Shutdown.Monitor.Schedule.Tests.csproj", "{99050229-9553-4852-940E-D9594EF7DB34}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{E36707E9-5A25-4758-BCA8-AB8FAB9586CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shutdown.Monitor.Git.Tests", "tests\Shutdown.Monitor.Git.Tests\Shutdown.Monitor.Git.Tests.csproj", "{512A0587-2185-4D1C-8479-FA61120D054B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shutdown.Monitor.Git", "libs\Shutdown.Monitor.Git\Shutdown.Monitor.Git.csproj", "{887DFA1F-0FB1-4C7D-81A2-E034D9C6D88F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,10 +34,20 @@ Global
 		{99050229-9553-4852-940E-D9594EF7DB34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99050229-9553-4852-940E-D9594EF7DB34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99050229-9553-4852-940E-D9594EF7DB34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{512A0587-2185-4D1C-8479-FA61120D054B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{512A0587-2185-4D1C-8479-FA61120D054B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{512A0587-2185-4D1C-8479-FA61120D054B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{512A0587-2185-4D1C-8479-FA61120D054B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{887DFA1F-0FB1-4C7D-81A2-E034D9C6D88F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{887DFA1F-0FB1-4C7D-81A2-E034D9C6D88F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{887DFA1F-0FB1-4C7D-81A2-E034D9C6D88F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{887DFA1F-0FB1-4C7D-81A2-E034D9C6D88F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{16E0A9AB-7B22-48F9-A301-4FE474C28A33} = {3E545299-1A51-4AD1-BFC8-9D36DB052ABB}
 		{272DB81E-B8DD-411E-8ECF-1B3C0166E120} = {3E545299-1A51-4AD1-BFC8-9D36DB052ABB}
 		{99050229-9553-4852-940E-D9594EF7DB34} = {28C44251-7421-4FA7-9404-44AF43BDCFCF}
+		{512A0587-2185-4D1C-8479-FA61120D054B} = {28C44251-7421-4FA7-9404-44AF43BDCFCF}
+		{887DFA1F-0FB1-4C7D-81A2-E034D9C6D88F} = {E36707E9-5A25-4758-BCA8-AB8FAB9586CB}
 	EndGlobalSection
 EndGlobal
