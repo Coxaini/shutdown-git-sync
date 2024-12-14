@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-Shutdown.Monitor.Sync-fe1a9af7-58ac-4acf-86dd-43a12ea802c9</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0"/>
+        <PackageReference Include="Quartz" Version="3.13.1"/>
+        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.1"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Shutdown.Monitor.Schedule\Shutdown.Monitor.Schedule.csproj"/>
+    </ItemGroup>
+</Project>
