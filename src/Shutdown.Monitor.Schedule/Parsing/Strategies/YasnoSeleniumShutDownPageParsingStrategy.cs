@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Ardalis.GuardClauses;
 using OpenQA.Selenium;
+using Shutdown.Monitor.Schedule.Mappers;
 using Shutdown.Monitor.Schedule.Models;
 using Shutdown.Monitor.Schedule.Parsing.Exceptions;
 using Shutdown.Monitor.Schedule.Parsing.Interfaces;
@@ -9,8 +10,7 @@ namespace Shutdown.Monitor.Schedule.Parsing.Strategies;
 
 public partial class YasnoSeleniumShutDownPageParsingStrategy : ISeleniumShutDownPageParsingStrategy
 {
-    private const int GroupCount = 5;
-    private const int IntervalCount = 24;
+    private const int IntervalCount = 25;
 
     private static readonly Regex DateRegex = GeneratedDateRegex();
 
@@ -50,7 +50,8 @@ public partial class YasnoSeleniumShutDownPageParsingStrategy : ISeleniumShutDow
         var schedule = scheduleBlock.FindElement(By.CssSelector("div.schedule"));
         Guard.Against.Null(schedule, nameof(schedule));
 
-        var scheduleItems = schedule.FindElements(By.CssSelector("div[class=\"col\"]")).ToArray();
+        var scheduleItems = schedule.FindElements(By.CssSelector("div[class=\"col\"], div[class=\"col legend\"]"))
+            .ToArray();
 
         var groups = ExtractGroupSchedules(scheduleItems);
 
@@ -66,7 +67,8 @@ public partial class YasnoSeleniumShutDownPageParsingStrategy : ISeleniumShutDow
             var groupItems = new Span<IWebElement>(scheduleItems, i * IntervalCount, IntervalCount);
             var lightOffIntervals = new List<TimeRange>();
 
-            for (var j = 0; j < IntervalCount; j++)
+            var groupId = groupItems[0].Text.ToGroupId();
+            for (var j = 1; j < IntervalCount; j++)
             {
                 var groupItem = groupItems[j];
                 var isOff = groupItem.FindElements(By.CssSelector(".blackout")).Count != 0;
@@ -81,7 +83,7 @@ public partial class YasnoSeleniumShutDownPageParsingStrategy : ISeleniumShutDow
                 lightOffIntervals.Add(timeRange);
             }
 
-            var groupSchedule = new GroupSchedule(i + 1, lightOffIntervals);
+            var groupSchedule = new GroupSchedule(groupId, lightOffIntervals);
             groups.Add(groupSchedule);
         }
 

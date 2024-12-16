@@ -2,7 +2,7 @@
 
 public class GroupSchedule
 {
-    public GroupSchedule(int groupId, IReadOnlyList<TimeRange> timeRanges)
+    public GroupSchedule(GroupId groupId, IReadOnlyList<TimeRange> timeRanges)
     {
         GroupId = groupId;
         TimeRanges = MergeTimeRanges(timeRanges);
@@ -39,6 +39,6 @@ public class GroupSchedule
         return unionTimeRanges;
     }
 
-    public int GroupId { get; init; }
+    public GroupId GroupId { get; init; }
     public IReadOnlyList<TimeRange> TimeRanges { get; init; }
 }

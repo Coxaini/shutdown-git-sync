@@ -9,6 +9,6 @@ public static class HouseMapper
 {
     public static House MapToHouse(this YasnoShutDownApiClient.RawHouse rawHouse)
     {
-        return new House(Regex.Unescape(rawHouse.Name), rawHouse.GroupId);
+        return new House(Regex.Unescape(rawHouse.Name), rawHouse.GroupId.ToGroupId());
     }
 }
