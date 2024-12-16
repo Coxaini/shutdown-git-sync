@@ -13,24 +13,24 @@ public class ScheduleGroupService : IScheduleGroupService
         _shutDownApiClient = shutDownApiClient;
     }
 
-    public async Task<int> GetAddressGroupAsync(Address address)
+    public async Task<GroupId> GetAddressGroupAsync(Address address)
     {
         var streets = await _shutDownApiClient.GetStreetsAsync(address.City);
         var street = streets.FirstOrDefault(s => s.Name == address.Street);
-        
+
         if (street is null)
         {
             throw new ArgumentException($"Street {address.Street} not found in city {address.City}");
         }
-        
+
         var houses = await _shutDownApiClient.GetHousesAsync(address.City, street.Id);
         var house = houses.FirstOrDefault(h => h.Name == address.House);
-        
+
         if (house is null)
         {
             throw new ArgumentException($"House {address.House} not found on street {address.Street}");
         }
-        
+
         return house.GroupId;
     }
 }

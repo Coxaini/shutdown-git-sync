@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using Ardalis.GuardClauses;
+using Shutdown.Monitor.Schedule.Mappers;
 using Shutdown.Monitor.Schedule.Models;
 using Shutdown.Monitor.Schedule.Parsing.Interfaces;
 
@@ -8,7 +9,7 @@ namespace Shutdown.Monitor.Schedule.Parsing.Strategies;
 
 public partial class YasnoHtmlShutDownPageParsingStrategy : IHtmlShutDownPageParsingStrategy
 {
-    private const int IntervalCount = 24;
+    private const int IntervalCount = 25;
 
     public IEnumerable<GroupSchedule> RetrieveGroupSchedule(IDocument page)
     {
@@ -21,7 +22,7 @@ public partial class YasnoHtmlShutDownPageParsingStrategy : IHtmlShutDownPagePar
         var schedule = scheduleBlock.QuerySelector("div.schedule");
         Guard.Against.Null(schedule, nameof(schedule));
 
-        var scheduleItems = schedule.QuerySelectorAll("div[class=\"col\"]").ToArray();
+        var scheduleItems = schedule.QuerySelectorAll("div[class=\"col\"], div[class=\"col legend\"]").ToArray();
 
         var groups = ExtractGroupSchedules(scheduleItems);
 
@@ -37,7 +38,8 @@ public partial class YasnoHtmlShutDownPageParsingStrategy : IHtmlShutDownPagePar
             var groupItems = new Span<IElement>(scheduleItems, i * IntervalCount, IntervalCount);
             var lightOffIntervals = new List<TimeRange>();
 
-            for (int j = 0; j < IntervalCount; j++)
+            var groupId = groupItems[0].TextContent.ToGroupId();
+            for (int j = 1; j < IntervalCount; j++)
             {
                 var groupItem = groupItems[j];
                 var isOff = groupItems[j].QuerySelector(".blackout") != null;
@@ -52,7 +54,7 @@ public partial class YasnoHtmlShutDownPageParsingStrategy : IHtmlShutDownPagePar
                 lightOffIntervals.Add(timeRange);
             }
 
-            var groupSchedule = new GroupSchedule(i + 1, lightOffIntervals);
+            var groupSchedule = new GroupSchedule(groupId, lightOffIntervals);
             groups.Add(groupSchedule);
         }
 

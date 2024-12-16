@@ -44,7 +44,7 @@ public class YasnoShutDownApiClient : IShutDownApiClient
 
     public class RawHouse
     {
-        [JsonPropertyName("group")] public int GroupId { get; init; }
+        [JsonPropertyName("group")] public string GroupId { get; init; } = null!;
 
         public string Name { get; init; } = null!;
     }
