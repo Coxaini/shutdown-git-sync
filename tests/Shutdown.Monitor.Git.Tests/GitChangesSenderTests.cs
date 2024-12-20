@@ -9,12 +9,21 @@ namespace Shutdown.Monitor.Git.Tests;
 public class GitChangesSenderTests : GitTestBase
 {
     private readonly GitChangesSender _gitChangesSender;
+    private readonly Repository _senderRepository;
+    private readonly string _testRepoPath;
 
     public GitChangesSenderTests()
     {
+        _testRepoPath = Path.Combine(AppContext.BaseDirectory, GitTestConstants.SenderRepoDir);
+
+        if (!Directory.Exists(_testRepoPath))
+            CloneRepository(CredentialsHandler, RemoteGitConfig.Origin, _testRepoPath);
+
+        _senderRepository = new Repository(_testRepoPath);
+
         _gitChangesSender = new GitChangesSender(new GitConfig
         {
-            RepoPath = RemoteGitConfig.RepoPath,
+            RepoPath = _testRepoPath,
             Origin = RemoteGitConfig.Origin,
             TempBranchPrefix = RemoteGitConfig.TempBranchPrefix,
             UserName = RemoteGitConfig.UserName,
@@ -27,24 +36,24 @@ public class GitChangesSenderTests : GitTestBase
     [Fact]
     public void SaveChanges_ShouldCreateTempBranchOnRemote()
     {
-        var file = Path.Combine(RemoteGitConfig.RepoPath, "test-file.txt");
+        var file = Path.Combine(_testRepoPath, "test-file.txt");
         File.AppendAllText(file, "test");
 
         var result = _gitChangesSender.SaveChangesToTempBranch();
-        Commands.Pull(Repository, new Signature(Identity, DateTimeOffset.Now), PullOptions);
+        Commands.Pull(_senderRepository, new Signature(Identity, DateTimeOffset.Now), PullOptions);
 
         Assert.True(result.IsSuccess);
-        Assert.NotNull(Repository.Branches[result.Value.BranchName]);
+        Assert.NotNull(_senderRepository.Branches[result.Value.TempBranchName]);
     }
 
     [Fact]
     public void SaveChanges_ShouldContainUntrackedFile()
     {
-        var file = Path.Combine(RemoteGitConfig.RepoPath, "test-file.txt");
+        var file = Path.Combine(_testRepoPath, "test-file.txt");
         File.WriteAllText(file, "test");
 
         var result = _gitChangesSender.SaveChangesToTempBranch();
-        Commands.Pull(Repository, new Signature(Identity, DateTimeOffset.Now), PullOptions);
+        Commands.Pull(_senderRepository, new Signature(Identity, DateTimeOffset.Now), PullOptions);
 
         Assert.True(result.IsSuccess);
         Assert.Contains(result.Value.CommitedFiles, f => f.WasUntracked);
@@ -53,12 +62,12 @@ public class GitChangesSenderTests : GitTestBase
     [Fact]
     public void SaveChanges_ShouldContainAddedFile()
     {
-        CreateTestBranchWithCommit("test-branch", "test-file.txt", "test content");
-        var file = Path.Combine(RemoteGitConfig.RepoPath, "test-file.txt");
-        File.AppendAllText(file, "test");
+        var filePath = Path.Combine(_testRepoPath, "test-file.txt");
+        CreateBranchWithCommit(_senderRepository, "test-branch", filePath, "test content");
+        File.AppendAllText(filePath, "test");
 
         var result = _gitChangesSender.SaveChangesToTempBranch();
-        Commands.Pull(Repository, new Signature(Identity, DateTimeOffset.Now), PullOptions);
+        Commands.Pull(_senderRepository, new Signature(Identity, DateTimeOffset.Now), PullOptions);
 
         Assert.True(result.IsSuccess);
         Assert.Contains(result.Value.CommitedFiles, f => !f.WasUntracked);
@@ -68,9 +77,14 @@ public class GitChangesSenderTests : GitTestBase
     public void SaveChanges_ShouldReturnAnError_WhenNoChangesInRepository()
     {
         var result = _gitChangesSender.SaveChangesToTempBranch();
-        Commands.Pull(Repository, new Signature(Identity, DateTimeOffset.Now), PullOptions);
+        Commands.Pull(_senderRepository, new Signature(Identity, DateTimeOffset.Now), PullOptions);
 
         Assert.True(result.IsFailure);
         Assert.IsType<NoChangesInRepository>(result.Exception);
+    }
+
+    public override void Dispose()
+    {
+        ClearRepository(_senderRepository);
     }
 }

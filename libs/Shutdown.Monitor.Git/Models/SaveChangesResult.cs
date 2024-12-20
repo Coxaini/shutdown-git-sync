@@ -1,3 +1,3 @@
 ﻿namespace Shutdown.Monitor.Git.Models;
 
-public record SaveChangesResult(string BranchName, IEnumerable<CommitedFile> CommitedFiles);
+public record SaveChangesResult(string TempBranchName, string LastBranchName, IEnumerable<CommitedFile> CommitedFiles);
