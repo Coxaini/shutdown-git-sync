@@ -1,7 +1,7 @@
 ﻿# Shutdown.Monitor.Git.Tests
 
-This project contains unit tests for the `Shutdown.Monitor.Git` library, which provides functionality for monitoring and
-managing Git repositories.
+This project contains integration tests for the `Shutdown.Monitor.Git` library, which provides functionality for
+saving changes to a temporary branch in a Git repository and restoring
 
 ## Project Structure
 

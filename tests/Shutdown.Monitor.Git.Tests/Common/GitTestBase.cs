@@ -7,9 +7,10 @@ namespace Shutdown.Monitor.Git.Tests.Common;
 public abstract class GitTestBase : IDisposable
 {
     protected readonly RemoteGitConfig RemoteGitConfig;
-    protected readonly Repository Repository;
+    protected readonly CredentialsHandler CredentialsHandler;
     protected readonly PushOptions PushOptions;
     protected readonly PullOptions PullOptions;
+    protected readonly FetchOptions FetchOptions;
     protected readonly Identity Identity;
 
     protected GitTestBase()
@@ -23,8 +24,7 @@ public abstract class GitTestBase : IDisposable
 
         RemoteGitConfig = config ?? throw new ArgumentNullException(nameof(RemoteGitConfig));
 
-        Repository = new Repository(RemoteGitConfig.RepoPath);
-        CredentialsHandler credentialsHandler = (url, usernameFromUrl, types) =>
+        CredentialsHandler = (url, usernameFromUrl, types) =>
             new UsernamePasswordCredentials
             {
                 Username = RemoteGitConfig.UserName,
@@ -33,41 +33,56 @@ public abstract class GitTestBase : IDisposable
 
         PushOptions = new PushOptions
         {
-            CredentialsProvider = credentialsHandler
+            CredentialsProvider = CredentialsHandler
+        };
+        FetchOptions = new FetchOptions
+        {
+            CredentialsProvider = CredentialsHandler
         };
         PullOptions = new PullOptions()
         {
-            FetchOptions = new FetchOptions()
-            {
-                CredentialsProvider = credentialsHandler
-            }
+            FetchOptions = FetchOptions
         };
 
         Identity = new Identity(RemoteGitConfig.Name, RemoteGitConfig.Email);
     }
 
-    protected void CreateTestBranchWithCommit(string branchName, string fileName, string content)
+    protected void CloneRepository(CredentialsHandler credentialsHandler, string origin, string repoPath)
     {
-        var branch = Repository.CreateBranch(branchName);
-        Commands.Checkout(Repository, branchName);
-        var file = Path.Combine(RemoteGitConfig.RepoPath, fileName);
-        File.WriteAllText(file, content);
-        Commands.Stage(Repository, file);
-        Repository.Commit("Initial commit", new Signature(Identity, DateTimeOffset.Now),
-            new Signature(Identity, DateTimeOffset.Now));
-
-        var remote = Repository.Network.Remotes["origin"];
-        Repository.Branches.Update(branch, b => b.Remote = remote.Name,
-            b => b.UpstreamBranch = branch.CanonicalName);
-
-        Repository.Network.Push(branch, PushOptions);
+        var cloneOptions = new CloneOptions
+        {
+            FetchOptions =
+            {
+                CredentialsProvider = credentialsHandler
+            }
+        };
+        var directory = Directory.CreateDirectory(repoPath);
+        Repository.Clone(origin, repoPath, cloneOptions);
     }
 
-    private void ClearRepository()
+    protected void CreateBranchWithCommit(Repository repository, string branchName, string filePath, string content,
+        string commitMessage = "Initial commit")
     {
-        Commands.Checkout(Repository, "master");
+        var branch = repository.CreateBranch(branchName);
+        Commands.Checkout(repository, branchName);
+        File.AppendAllText(filePath, content);
+        Commands.Stage(repository, filePath);
+        repository.Commit(commitMessage, new Signature(Identity, DateTimeOffset.Now),
+            new Signature(Identity, DateTimeOffset.Now));
 
-        var branches = Repository.Branches.ToArray();
+        var remote = repository.Network.Remotes["origin"];
+        repository.Branches.Update(branch, b => b.Remote = remote.Name,
+            b => b.UpstreamBranch = branch.CanonicalName);
+
+        repository.Network.Push(branch, PushOptions);
+    }
+
+
+    protected void ClearRepository(Repository repository, bool clearRemote = true)
+    {
+        Commands.Checkout(repository, "master");
+
+        var branches = repository.Branches.ToArray();
 
         foreach (var branch in branches)
         {
@@ -77,15 +92,15 @@ public abstract class GitTestBase : IDisposable
             }
 
             if (!branch.IsRemote)
-                Repository.Branches.Remove(branch);
+                repository.Branches.Remove(branch);
 
-            Repository.Network.Push(Repository.Network.Remotes["origin"],
-                $":{branch.CanonicalName}", PushOptions);
+            if (clearRemote)
+                repository.Network.Push(repository.Network.Remotes["origin"],
+                    $":{branch.CanonicalName}", PushOptions);
         }
+
+        repository.Dispose();
     }
 
-    public void Dispose()
-    {
-        ClearRepository();
-    }
+    public abstract void Dispose();
 }

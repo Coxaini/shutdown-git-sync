@@ -2,12 +2,12 @@
 
 public class CommitedFile
 {
-    public CommitedFile(string path, bool wasUntracked)
+    public CommitedFile(string filePath, bool wasUntracked)
     {
-        Path = path;
+        FilePath = filePath;
         WasUntracked = wasUntracked;
     }
 
-    public string Path { get; init; }
+    public string FilePath { get; init; }
     public bool WasUntracked { get; init; }
 }

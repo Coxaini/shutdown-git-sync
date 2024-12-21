@@ -42,7 +42,8 @@ public class GitChangesSender : GitChangesClient, IGitChangesSender
 
         Repository.Network.Push(tempBranch, PushOptions);
 
-        return new SaveChangesResult(tempBranch.CanonicalName, files);
+        return new SaveChangesResult(tempBranch.TrackedBranch.CanonicalName, currentBranch.TrackedBranch.CanonicalName,
+            files);
     }
 
     private static CommitedFile[] GetFileChanges(RepositoryStatus status)
