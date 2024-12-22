@@ -1,5 +1,6 @@
 ﻿using LibGit2Sharp;
 using Shutdown.Monitor.Git.Common.Configs;
+using Shutdown.Monitor.Git.Common.Helpers;
 using Shutdown.Monitor.Git.Interfaces;
 using Shutdown.Monitor.Git.Models;
 
@@ -22,7 +23,8 @@ public class GitChangesReceiver : GitChangesClient, IGitChangesReceiver
             Repository.Stashes.Add(new Signature(Identity, DateTimeOffset.Now), StashModifiers.Default);
 
         var trackedtempBranch = Repository.Branches[tempBranchName];
-        var localTempBranch = Repository.CreateBranch(GetLocalFriendlyNameFromRemoteBranch(trackedtempBranch),
+        var localTempBranch = Repository.CreateBranch(
+            trackedtempBranch.GetLocalFriendlyNameFromRemoteBranch(),
             trackedtempBranch.Tip);
 
         Repository.Branches.Update(localTempBranch, b => b.Remote = remote.Name,
@@ -32,11 +34,12 @@ public class GitChangesReceiver : GitChangesClient, IGitChangesReceiver
         Repository.Reset(ResetMode.Soft, "HEAD~1");
 
         var trackedBranch = Repository.Branches[branchName];
-        var localBranch = Repository.Branches[GetLocalFriendlyNameFromRemoteBranch(trackedBranch)];
+        var localBranch = Repository.Branches[trackedBranch.GetLocalFriendlyNameFromRemoteBranch()];
         if (localBranch is null)
         {
             localBranch =
-                Repository.CreateBranch(GetLocalFriendlyNameFromRemoteBranch(trackedBranch), trackedBranch.Tip);
+                Repository.CreateBranch(trackedBranch.GetLocalFriendlyNameFromRemoteBranch(),
+                    trackedBranch.Tip);
             Repository.Branches.Update(localBranch, b => b.Remote = remote.Name,
                 b => b.UpstreamBranch = localBranch.CanonicalName);
         }
@@ -58,10 +61,5 @@ public class GitChangesReceiver : GitChangesClient, IGitChangesReceiver
         Repository.Branches.Remove(localTempBranch);
         Repository.Network.Push(remote,
             $":{localTempBranch.CanonicalName}", PushOptions);
-    }
-
-    private string GetLocalFriendlyNameFromRemoteBranch(Branch branch)
-    {
-        return branch.FriendlyName.Replace($"{branch.RemoteName}/", "");
     }
 }
