@@ -19,6 +19,12 @@ public readonly struct GroupId : IEquatable<GroupId>, IComparable<GroupId>
 
     public bool Equals(GroupId other)
     {
+        if (SubGroup is null && other.SubGroup is not null || SubGroup is not null && other.SubGroup is null)
+        {
+            return MainGroup == other.MainGroup;
+        }
+
+
         return MainGroup == other.MainGroup && SubGroup == other.SubGroup;
     }
 

@@ -4,10 +4,6 @@ public class ScheduleConfig
 {
     public const string Schedule = "Schedule";
     public ElectricityDeviceType DeviceType { get; init; }
-}
-
-public enum ElectricityDeviceType
-{
-    Stationary,
-    Battery
+    public int TimeOffSet { get; init; }
+    public TimeSpan TimeOffSetSpan => TimeSpan.FromMinutes(TimeOffSet);
 }

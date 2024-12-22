@@ -41,4 +41,18 @@ public class SyncChangesScheduler : ISyncChangesScheduler
             _logger.LogInformation("Scheduled SyncChangesTask at {Time}", time);
         }
     }
+
+    public async Task ScheduleImmediate()
+    {
+        var immediateTrigger = TriggerBuilder.Create()
+            .WithIdentity("Immediate")
+            .ForJob(JobKey.Create(nameof(SyncChangesTask)))
+            .StartNow()
+            .Build();
+
+        var scheduler = await _schedulerFactory.GetScheduler();
+        await scheduler.ScheduleJob(immediateTrigger);
+
+        _logger.LogInformation("Scheduled SyncChangesTask immediately");
+    }
 }

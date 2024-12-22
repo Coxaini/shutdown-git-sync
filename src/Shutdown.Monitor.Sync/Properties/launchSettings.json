@@ -4,9 +4,28 @@
     "Shutdown.Monitor.Sync": {
       "commandName": "Project",
       "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5139",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }
+    },
+    "Shutdown.Monitor.Sync.Battery": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5139",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "commandLineArgs": "--Schedule:DeviceType=Battery --Network:SyncAddress=http://localhost:5138 --Repository:RepoPath=gittests-battery"
+    },
+    "Shutdown.Monitor.Sync.Stationary": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5138",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "commandLineArgs": "--Schedule:DeviceType=Stationary --Network:SyncAddress=http://localhost:5139 --Repository:RepoPath=gittests-stationary"
     }
   }
 }

@@ -25,6 +25,7 @@ public class GitChangesSender : GitChangesClient, IGitChangesSender
             return new NoChangesInRepository();
 
         var currentBranch = Repository.Head;
+
         var tempBranchName =
             $"{Configuration.TempBranchPrefix}-temp-{currentBranch.FriendlyName}";
 
@@ -42,8 +43,17 @@ public class GitChangesSender : GitChangesClient, IGitChangesSender
 
         Repository.Network.Push(tempBranch, PushOptions);
 
-        return new SaveChangesResult(tempBranch.TrackedBranch.CanonicalName, currentBranch.TrackedBranch.CanonicalName,
+        Repository.Reset(ResetMode.Soft, "HEAD~1");
+
+        Commands.Checkout(Repository, currentBranch);
+
+        var result = new SaveChangesResult(tempBranch.TrackedBranch.CanonicalName,
+            currentBranch.TrackedBranch.CanonicalName,
             files);
+
+        Repository.Branches.Remove(tempBranch);
+
+        return result;
     }
 
     private static CommitedFile[] GetFileChanges(RepositoryStatus status)
