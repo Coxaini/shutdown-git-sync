@@ -23,22 +23,22 @@ jobs:
         dotnet-version: '9.0' # Specify the version of .NET Core/ASP.NET Core
 
     - name: Install dependencies
-      run: dotnet restore ./ShutDown.Monitor.sln
+      run: dotnet restore ./Shutdown.Monitor.sln
 
     - name: Create testsettings.json
       run: echo "${{ secrets.TEST_SETTINGS_JSON }}" > ./tests/Shutdown.Monitor.Git.Tests/testsettings.json
 
     - name: Build the app
-      run: dotnet build ./ShutDown.Monitor.sln --configuration Release --no-restore
+      run: dotnet build ./Shutdown.Monitor.sln --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test ./ShutDown.Monitor.sln --configuration Release --no-build
+      run: dotnet test ./Shutdown.Monitor.sln --configuration Release --no-build
 
     - name: Remove testsettings.json
       run: rm ./tests/Shutdown.Monitor.Git.Tests/testsettings.json
 
     - name: Publish the app
-      run: dotnet publish ./ShutDown.Monitor.sln --configuration Release -o ./publish
+      run: dotnet publish ./Shutdown.Monitor.sln --configuration Release -o ./publish
 
     - name: Install RAR (p7zip-rar)
       run: |
