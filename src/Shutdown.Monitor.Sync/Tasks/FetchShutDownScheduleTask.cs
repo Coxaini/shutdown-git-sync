@@ -2,7 +2,6 @@
 using Quartz;
 using Shutdown.Monitor.Schedule.Interfaces;
 using Shutdown.Monitor.Schedule.Models;
-using Shutdown.Monitor.Sync.Common;
 using Shutdown.Monitor.Sync.Common.Configs;
 using Shutdown.Monitor.Sync.Interfaces;
 
@@ -38,18 +37,20 @@ public class FetchShutDownScheduleTask : IJob
         var schedule = await _shutDownScheduleService.GetShutDownScheduleAsync(_address);
 
         var futureTimeRanges = GetFutureTimeRangesSyncTimes(schedule,
+            _scheduleConfig.TimeOffSetSpan,
             _scheduleConfig.DeviceType is ElectricityDeviceType.Battery);
 
         await _syncChangesScheduler.Schedule(futureTimeRanges);
 
-        _logger.LogInformation("Shut down schedule fetched");
+        _logger.LogInformation("Shut down scheduled on times: {Times}", futureTimeRanges);
     }
 
-    private static IEnumerable<TimeOnly> GetFutureTimeRangesSyncTimes(GroupSchedule schedule, bool byEnd = false)
+    private static IEnumerable<TimeOnly> GetFutureTimeRangesSyncTimes(GroupSchedule schedule, TimeSpan timeWindow,
+        bool byEnd = false)
     {
         var now = TimeOnly.FromDateTime(DateTime.Now);
         return schedule.TimeRanges
             .Where(tr => tr.Start > now || (byEnd && tr.End > now))
-            .Select(tr => byEnd ? tr.End : tr.Start);
+            .Select(tr => byEnd ? (tr.End.Add(timeWindow)) : tr.Start.Add(-timeWindow));
     }
 }
