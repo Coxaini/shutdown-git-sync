@@ -62,7 +62,7 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v3
       with:
-        name: aspnetcore-app-rar
+        name: shutdown-monitor-app
 
     - name: Create GitHub Release
       uses: actions/create-release@v1
