@@ -47,9 +47,16 @@ public partial class YasnoHtmlShutDownPageParsingStrategy : IHtmlShutDownPagePar
                 if (!isOff) continue;
 
                 var time = TimeSpan.FromHours(j);
+                var endTime = time.Add(TimeSpan.FromHours(1));
+
+                if (endTime == TimeSpan.FromHours(24))
+                {
+                    endTime = TimeOnly.MaxValue.ToTimeSpan();
+                }
+
                 var timeRange = new TimeRange(
                     TimeOnly.FromTimeSpan(time),
-                    TimeOnly.FromTimeSpan(time.Add(TimeSpan.FromHours(1)))
+                    TimeOnly.FromTimeSpan(endTime)
                 );
                 lightOffIntervals.Add(timeRange);
             }
