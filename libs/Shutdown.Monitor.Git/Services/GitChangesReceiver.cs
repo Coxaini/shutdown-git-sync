@@ -18,6 +18,9 @@ public class GitChangesReceiver : GitChangesClient, IGitChangesReceiver
         var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
         Commands.Fetch(Repository, remote.Name, refSpecs, FetchOptions, string.Empty);
 
+        if (Repository.Index.Count != 0)
+            Repository.Stashes.Add(new Signature(Identity, DateTimeOffset.Now), StashModifiers.Default);
+
         var trackedtempBranch = Repository.Branches[tempBranchName];
         var localTempBranch = Repository.CreateBranch(GetLocalFriendlyNameFromRemoteBranch(trackedtempBranch),
             trackedtempBranch.Tip);
@@ -26,14 +29,18 @@ public class GitChangesReceiver : GitChangesClient, IGitChangesReceiver
             b => b.UpstreamBranch = localTempBranch.CanonicalName);
         Commands.Checkout(Repository, localTempBranch);
 
-        Repository.Reset(ResetMode.Hard, "HEAD~1");
+        Repository.Reset(ResetMode.Soft, "HEAD~1");
 
         var trackedBranch = Repository.Branches[branchName];
-        var localBranch =
-            Repository.CreateBranch(GetLocalFriendlyNameFromRemoteBranch(trackedBranch), trackedBranch.Tip);
+        var localBranch = Repository.Branches[GetLocalFriendlyNameFromRemoteBranch(trackedBranch)];
+        if (localBranch is null)
+        {
+            localBranch =
+                Repository.CreateBranch(GetLocalFriendlyNameFromRemoteBranch(trackedBranch), trackedBranch.Tip);
+            Repository.Branches.Update(localBranch, b => b.Remote = remote.Name,
+                b => b.UpstreamBranch = localBranch.CanonicalName);
+        }
 
-        Repository.Branches.Update(localBranch, b => b.Remote = remote.Name,
-            b => b.UpstreamBranch = localBranch.CanonicalName);
         Commands.Checkout(Repository, localBranch);
 
         foreach (var file in commitedFiles)
@@ -41,6 +48,10 @@ public class GitChangesReceiver : GitChangesClient, IGitChangesReceiver
             if (file.WasUntracked)
             {
                 Commands.Unstage(Repository, file.FilePath);
+            }
+            else
+            {
+                Commands.Stage(Repository, file.FilePath);
             }
         }
 
