@@ -1,6 +1,7 @@
 ﻿using LibGit2Sharp;
 using LibGit2Sharp.Handlers;
 using Microsoft.Extensions.Configuration;
+using Shutdown.Monitor.Git.Common.Helpers;
 
 namespace Shutdown.Monitor.Git.Tests.Common;
 
@@ -80,6 +81,7 @@ public abstract class GitTestBase : IDisposable
 
     protected void ClearRepository(Repository repository, bool clearRemote = true)
     {
+        repository.Stashes.Add(new Signature(Identity, DateTimeOffset.Now), "test stash");
         Commands.Checkout(repository, "master");
 
         var branches = repository.Branches.ToArray();
@@ -94,9 +96,14 @@ public abstract class GitTestBase : IDisposable
             if (!branch.IsRemote)
                 repository.Branches.Remove(branch);
 
-            if (clearRemote)
+            if (clearRemote && branch.IsRemote)
                 repository.Network.Push(repository.Network.Remotes["origin"],
-                    $":{branch.CanonicalName}", PushOptions);
+                    $":{branch.UpstreamBranchCanonicalName}", PushOptions);
+        }
+
+        for (var i = 0; i < repository.Stashes.Count(); i++)
+        {
+            repository.Stashes.Remove(i);
         }
 
         repository.Dispose();
