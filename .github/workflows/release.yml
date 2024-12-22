@@ -1,0 +1,76 @@
+name: Build and Release shutdown git sync app
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers workflow on tags matching v*, e.g., v1.0.0
+  workflow_dispatch: # Allow manual trigger from the GitHub Actions UI
+
+env:
+  APP_FILE_NAME: shutdown-git-sync
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0' # Specify the version of .NET Core/ASP.NET Core
+
+    - name: Install dependencies
+      run: dotnet restore ./ShutDown.Monitor.sln
+
+    - name: Create testsettings.json
+      run: echo "${{ secrets.TEST_SETTINGS_JSON }}" > ./tests/Shutdown.Monitor.Git.Tests/testsettings.json
+
+    - name: Build the app
+      run: dotnet build ./ShutDown.Monitor.sln --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test ./ShutDown.Monitor.sln --configuration Release --no-build
+
+    - name: Remove testsettings.json
+      run: rm ./tests/Shutdown.Monitor.Git.Tests/testsettings.json
+
+    - name: Publish the app
+      run: dotnet publish ./ShutDown.Monitor.sln --configuration Release -o ./publish
+
+    - name: Install RAR (p7zip-rar)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y p7zip-rar
+
+    - name: Package to RAR
+      run: 7z a -tzip ${{ env.APP_FILE_NAME }}.zip ./publish/*
+
+    - name: Create a release artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: shutdown-monitor-app
+        path: ./${{ env.APP_FILE_NAME }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: aspnetcore-app-rar
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }} # Use the tag that triggered the workflow
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+        files: ./${{ env.APP_FILE_NAME }}.zip # Attach the RAR file to the release
