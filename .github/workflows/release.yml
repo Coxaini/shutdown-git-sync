@@ -64,13 +64,21 @@ jobs:
       with:
         name: shutdown-monitor-app
 
-    - name: Create GitHub Release
+    - name: Create Release
+      id: create_release
       uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref_name }} # Use the tag that triggered the workflow
-        release_name: Release ${{ github.ref_name }}
+        tag_name: master
+        release_name: Release master
         draft: false
         prerelease: false
-        files: ./${{ env.APP_FILE_NAME }}.zip # Attach the RAR file to the release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ env.APP_FILE_NAME }}.zip
+        asset_name: ${{ env.APP_FILE_NAME }}.zip
+        asset_content_type: application/zip
