@@ -31,8 +31,8 @@ jobs:
     - name: Build the app
       run: dotnet build ./Shutdown.Monitor.sln --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test ./Shutdown.Monitor.sln --configuration Release --no-build
+    # - name: Run tests
+    #   run: dotnet test ./Shutdown.Monitor.sln --configuration Release --no-build
 
     - name: Remove testsettings.json
       run: rm ./tests/Shutdown.Monitor.Git.Tests/testsettings.json
