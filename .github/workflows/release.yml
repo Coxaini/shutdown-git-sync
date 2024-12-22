@@ -38,7 +38,7 @@ jobs:
       run: rm ./tests/Shutdown.Monitor.Git.Tests/testsettings.json
 
     - name: Publish the app
-      run: dotnet publish ./src/Shutdown.Monitor.Sync/Shutdown.Monitor.Sync.csproj --configuration Release -r win10-x64 -o ./publish
+      run: dotnet publish ./src/Shutdown.Monitor.Sync/Shutdown.Monitor.Sync.csproj --configuration Release --framework net9.0 --runtime win-x64 -o ./publish
 
     - name: Install RAR (p7zip-rar)
       run: |
